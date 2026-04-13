@@ -29,8 +29,13 @@
 
 ## 📸 Interface Preview
 
-![Jaldi 5 Interface Preview](./screenshot.jpg)
-*Professional, clean UI with high-contrast status tags.*
+To give you a better look at how the tracker works, here is the setup and the live gameplay view:
+
+
+| 1. Setup & Entry | 2. Live Debt Tracking |
+| :---: | :---: |
+| ![Setup Screenshot](./screenshot1.jpg) | ![Gameplay Screenshot](./screenshot2.jpg) |
+| *Defining ticket costs and adding players* | *Managing winners and real-time debt status* |
 
 ---
 
