@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Jaldi 5 - Dynamic Debt Manager</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; padding: 20px; }
+        .container { background: white; max-width: 1000px; margin: auto; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .setup { display: flex; gap: 10px; margin-bottom: 20px; background: #eef2f3; padding: 15px; border-radius: 8px; align-items: flex-end; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #1a73e8; color: white; padding: 12px; text-align: left; font-size: 0.9em; }
+        td { padding: 10px; border-bottom: 1px solid #eee; }
+        input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        
+        /* Action Buttons Group */
+        .action-group { display: flex; gap: 4px; min-width: 200px; }
+        .btn { border: none; padding: 6px; border-radius: 4px; color: white; font-weight: bold; cursor: pointer; font-size: 0.75em; flex: 1; text-align: center; }
+        .btn-jaldi { background: #fb8c00; }
+        .btn-line { background: #4caf50; }
+        .btn-house { background: #e91e63; }
+        .btn-remove { background: #555; font-size: 1.1em; }
+        .btn-remove:hover { background: #d32f2f; }
+        
+        .status-debt { color: #d93025; font-weight: bold; background: #fce8e6; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; display: inline-block; }
+        .status-paid { color: #188038; font-weight: bold; }
+        .status-we-owe { color: #1a73e8; font-weight: bold; background: #e8f0fe; padding: 4px 8px; border-radius: 4px; font-size: 0.85em; display: inline-block; }
+        .summary { margin-top: 25px; padding: 20px; background: #202124; color: white; border-radius: 10px; display: flex; justify-content: space-around; text-align: center; }
+        .prize-box span { display: block; font-size: 0.8em; color: #9aa0a6; margin-bottom: 5px; }
+        .prize-box b { color: #8ab4f8; font-size: 1.4em; }
+        .log { margin-top: 20px; border-top: 1px dashed #ccc; padding-top: 10px; font-size: 0.9em; color: #666; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="color: #1a73e8; margin: 0 0 20px 0;">Jaldi 5 Master Tracker</h2>
+    
+    <div class="setup">
+        <div style="flex: 2;">
+            <label style="font-size: 0.8em; font-weight: bold;">Player Name</label>
+            <input type="text" id="pName" placeholder="Enter name...">
+        </div>
+        <div>
+            <label style="font-size: 0.8em; font-weight: bold;">Tickets</label>
+            <input type="number" id="pTix" value="2" min="1" style="width: 60px;">
+        </div>
+        <div>
+            <label style="font-size: 0.8em; font-weight: bold;">Paid (₹)</label>
+            <input type="number" id="pPaid" value="20" style="width: 80px;">
+        </div>
+        <button onclick="addPlayer()" style="background:#1a73e8; color:white; border:none; padding:10px 25px; border-radius:4px; cursor:pointer; font-weight: bold;">+ Add</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Player Name</th>
+                <th>Tix</th>
+                <th>Paid (₹)</th>
+                <th>Status / Debt</th>
+                <th style="text-align: center;">Winner Actions & Remove</th>
+            </tr>
+        </thead>
+        <tbody id="playerList"></tbody>
+    </table>
+
+    <div class="summary">
+        <div class="prize-box"><span>Jaldi 5 </span><b id="val_jaldi">₹0</b></div>
+        <div class="prize-box"><span>Each Line </span><b id="val_line">₹0</b></div>
+        <div class="prize-box"><span>Full House </span><b id="val_house">₹0</b></div>
+        <div class="prize-box"><span style="color: #81c995;">Collection (Paid)</span><b id="val_pool" style="color: #81c995;">₹0</b></div>
+    </div>
+
+    <div class="log" id="logItems"><i>Game History will appear here...</i></div>
+</div>
+
+<script>
+    let players = [];
+    let pJaldi = 0, pLine = 0, pHouse = 0;
+    let ticketCost = 10; // Default, will be changed on load
+
+    window.addEventListener('load', function() {
+        const cost = prompt("What is the ticket cost?", "10");
+        if (cost !== null) {
+            ticketCost = parseInt(cost) || 10;
+        }
+    });
+
+    function addPlayer() {
+        const name = document.getElementById('pName').value;
+        const tix = parseInt(document.getElementById('pTix').value) || 2;
+        const paid = parseInt(document.getElementById('pPaid').value) || 0;
+        if (!name) return;
+
+        players.push({ name, tix, paid });
+        document.getElementById('pName').value = "";
+        document.getElementById('pTix').value = "2";
+        document.getElementById('pPaid').value = "20";
+        updateTable();
+    }
+
+    function removePlayer(idx) {
+        if (confirm("Remove " + players[idx].name + "?")) {
+            players.splice(idx, 1);
+            updateTable();
+        }
+    }
+
+    function updateVal(index, field, value) {
+        players[index][field] = field === 'name' ? value : parseInt(value) || 0;
+        updateTable();
+    }
+
+    function processWin(index, type) {
+        const p = players[index];
+        const totalDue = p.tix * ticketCost;
+        const owes = totalDue - p.paid;
+        let amount = 0;
+        
+        if (type === 'Jaldi') amount = pJaldi;
+        if (type === 'House') amount = pHouse;
+        if (type === 'Line') {
+            const count = prompt(`How many lines did ${p.name} win?`, "1");
+            if (count === null) return;
+            amount = pLine * (parseInt(count) || 0);
+        }
+
+        const finalCash = amount - owes;
+        let msg = `🏆 WINNER: ${p.name}\nPrize: ₹${amount}`;
+        
+        let historyText = "";
+        if (owes > 0) {
+            msg += `\nDebt: -₹${owes}\n------------------\nPAY IN HAND: ₹${finalCash}`;
+            historyText = `<div>• <b>${p.name}</b> won ${type} (Prize ₹${amount}, Debt -₹${owes}, Paid ₹${finalCash})</div>`;
+            // Auto-clear debt after winning
+            p.paid = totalDue;
+        } else if (owes < 0) {
+            msg += `\nWe Owe: +₹${Math.abs(owes)}\n------------------\nPAY IN HAND: ₹${finalCash}`;
+            historyText = `<div>• <b>${p.name}</b> won ${type} (Prize ₹${amount}, We Owe +₹${Math.abs(owes)}, Paid ₹${finalCash})</div>`;
+            // Auto-clear overpayment after winning (we settle what we owe)
+            p.paid = totalDue;
+        } else {
+            msg += `\n------------------\nPAY IN HAND: ₹${amount}`;
+            historyText = `<div>• <b>${p.name}</b> won ${type} (Prize ₹${amount})</div>`;
+        }
+        
+        // Add to game history log
+        const log = document.getElementById('logItems');
+        if(log.innerText.includes("Game History")) log.innerHTML = "";
+        log.innerHTML = historyText + log.innerHTML;
+        
+        alert(msg);
+        updateTable();
+    }
+
+    function updateTable() {
+        const list = document.getElementById('playerList');
+        list.innerHTML = "";
+        let totalPaid = 0;
+
+        players.forEach((p, i) => {
+            const totalDue = p.tix * ticketCost;
+            // Only count what they should have paid, not overpayment (we don't take from our pocket)
+            totalPaid += Math.min(p.paid, totalDue);
+        });
+
+        // Find best round divisor for prizes
+        let divisor = 10;
+        const commonDivisors = [1, 2, 5, 10, 20, 50, 100];
+        for (let d of commonDivisors.reverse()) {
+            if (totalPaid % d === 0) {
+                divisor = d;
+                break;
+            }
+        }
+
+        // Proportions: Lines 40 each, Jaldi 70, House 90 (ratio from ₹280 base)
+        // Apply ratio: Lines 120/280, Jaldi 70/280, House 90/280
+        pLine = Math.round((totalPaid * 120 / 280 / 3) / 10) * 10;
+        pJaldi = Math.round((totalPaid * 70 / 280) / 10) * 10;
+        pHouse = Math.round((totalPaid * 90 / 280) / 10) * 10;
+
+        players.forEach((p, i) => {
+            const totalDue = p.tix * ticketCost;
+            const owes = totalDue - p.paid;
+
+            list.innerHTML += `
+                <tr>
+                    <td><input type="text" value="${p.name}" onchange="updateVal(${i}, 'name', this.value)" style="width:100%; border:none; background:transparent; font-weight:bold;"></td>
+                    <td><input type="number" value="${p.tix}" onchange="updateVal(${i}, 'tix', this.value)" style="width:50px;"></td>
+                    <td><input type="number" value="${p.paid}" onchange="updateVal(${i}, 'paid', this.value)" style="width:60px;"></td>
+                    <td>${owes > 0 ? `<span class="status-debt">Owes ₹${owes}</span>` : owes < 0 ? `<span class="status-we-owe">We Owe ₹${Math.abs(owes)}</span>` : '<span class="status-paid">Paid ✅</span>'}</td>
+                    <td>
+                        <div class="action-group">
+                            <button class="btn btn-jaldi" onclick="processWin(${i}, 'Jaldi')">Jaldi</button>
+                            <button class="btn btn-line" onclick="processWin(${i}, 'Line')">Lines</button>
+                            <button class="btn btn-house" onclick="processWin(${i}, 'House')">House</button>
+                            <button class="btn btn-remove" onclick="removePlayer(${i})" title="Remove Player">🗑️</button>
+                        </div>
+                    </td>
+                </tr>`;
+        });
+
+        document.getElementById('val_pool').innerText = "₹" + totalPaid;
+        document.getElementById('val_jaldi').innerText = "₹" + pJaldi;
+        document.getElementById('val_line').innerText = "₹" + pLine;
+        document.getElementById('val_house').innerText = "₹" + (pHouse < 0 ? 0 : pHouse);
+    }
+</script>
+
+</body>
+</html>
