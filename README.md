@@ -3,7 +3,7 @@
 > **The Ultimate Payout & Debt Management Engine for Game Organizers.** 
 > No more mental math. No more "who owes what." Just smooth gaming.
 
-[🚀 **LAUNCH LIVE APP**](https://github.io)
+[🚀 **LAUNCH LIVE APP**](https://sgnancharan.github.io/jaldi-5/)
 
 ---
 
