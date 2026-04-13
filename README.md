@@ -29,13 +29,13 @@
 
 ## 📸 Interface Preview
 
-To give you a better look at how the tracker works, here is the setup and the live gameplay view:
+### 1. Setup & Entry
+![Setup Screenshot](./screenshot1.jpg)
+*Easily define ticket costs and add players with custom payment amounts.*
 
-
-| 1. Setup & Entry | 2. Live Debt Tracking |
-| :---: | :---: |
-| ![Setup Screenshot](./screenshot1.jpg) | ![Gameplay Screenshot](./screenshot2.jpg) |
-| *Defining ticket costs and adding players* | *Managing winners and real-time debt status* |
+### 2. Live Debt & Winner Tracking
+![Gameplay Screenshot](./screenshot2.jpg)
+*Manage winners and real-time debt status. Notice the color-coded debt tracking (Red for Owed, Blue for Change).*
 
 ---
 
